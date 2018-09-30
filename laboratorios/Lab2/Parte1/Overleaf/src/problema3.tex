@@ -1,0 +1,33 @@
+\section{Problema III}
+Considere el \textbf{problema de búsqueda}:
+    
+\textbf{Entrada:} Una secuencia de $n$ enteros $A = {a_1, a_2, ..., a_n}$ y un valor $v$.
+
+\textbf{Salida:} Un índice $i$ tal que $v = A[i]$ o el valor especial \textit{NIL} si $v$ no existe en $A$.
+
+Escriba un pseudocódigo para el algoritmo de \textbf{búsqueda lineal}, el cual recorre la secuencia buscando a $v$. Usando un bucle invariante pruebe que su algoritmo es correcto. Asegure que su bucle satisface las tres propiedades necesarias.
+
+\begin{algorithm}[H]
+    \caption{Linear Search}\label{alg:linear_search}
+    \begin{algorithmic}[1]
+        \Procedure{LinearSearch}{$A, v$}
+            \State $key = NIL$
+            \For{$j=1$ to $A$.length}
+                \If{$A[j] = v$}
+                    \State $key = j$
+                \EndIf\label{linear_search_if}
+            \EndFor\label{isort_for}
+            \Return $key$
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+
+\subsection{Inicialización}
+Se debe demostrar que nuestro bucle invariante contiene el subconjunto $A[1, ..., j-1]$. Al inicializar la rutina, nuestro bucle invariante consiste de el elemento $NIL$, el cual retornaremos en el caso que no exista $v$ en el arreglo $A$. Esto demuestra que el bucle invariante se mantiene antes de iniciar la primera iteración del ciclo \textit{for} del algoritmo.
+
+\subsection{Mantenimiento}
+Cada iteración del algoritmo mantiene el bucle invariante ya que este va a cambiar su valor almacenado cuando se encuentre el elemento $v$
+ en el arreglo $A$. De esta manera vemos que si se conserva el subconjunto de $A$ durante todas las iteraciones del algoritmo.
+ 
+\subsection{Terminación}
+Vemos que al terminar las iteraciones el ciclo \textit{for} del algoritmo, $j$ va a tener el valor $(n+1)$, una posición del arreglo que no es posible acceder. Por esta razón en este punto de la ejecución no se bisca indexar de nuevo una posición del arreglo con este índice, sino retorna el valor inicializado de la posición de $v$ en $A$, o $NIL$ en su defecto.

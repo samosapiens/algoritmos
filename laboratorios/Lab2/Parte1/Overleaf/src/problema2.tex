@@ -1,0 +1,21 @@
+\section{Problema II}
+Reescriba el procedimiento Insertion Sort para ordenar de manera descendiente y no en orden ascendente.
+
+Se requiere un algoritmo que ordene un arreglo de tamaño $n$ por la técnica incremental de Insertion Sort. Modificando la condición del bucle \textit{While} del pseudocódigo del algoritmo para ordenar de manera ascendente, de forma que la condición ahora sea $i > 0$ and $A[i] < key$, entonces se van a desplazar los elementos menores que el elemento actual hacia la derecha, posicionando los elementos mayores a la izquierda del arreglo, es decir al comienzo.
+
+\begin{algorithm}[H]
+    \caption{Insertion Sort Descendiente}\label{alg:isort_desc}
+    \begin{algorithmic}[1]
+        \Procedure{InsertionSort}{$A$}
+            \For{$j=2$ to $A$.length}
+                \State $key = A[j]$
+                \State $i = j-1$
+                \While{$i > 0$ and $A[i] < key$}
+                    \State $A[i+1] = A[i]$
+                    \State $i = i-1$
+                \EndWhile\label{isort_while}
+                \State $A[i+1] = key$
+            \EndFor\label{isort_for}
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}

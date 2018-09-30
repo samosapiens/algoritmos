@@ -1,0 +1,26 @@
+\section{Problema IV}
+Considere el problema de sumar dos números enteros binarios de $n$ bits, almacenados en dos arreglos de $n$ elementos $A$ y $B$. La suma de los dos enteros debería ser almacenada en forma binaria en un arreglo de $(n+1)$ elementos $C$. Desarrolle el problema formalmente y escriba pseudocódigo para sumar estos dos números. 
+
+\begin{algorithm}[H]
+    \caption{Suma Binaria}\label{alg:linear_search}
+    \begin{algorithmic}[1]
+        \Procedure{BinarySum}{$A, B, n$}
+            \State $C = zeros(n+1)$
+            \While{$n > 0$}
+                \State $C[n+1] = (A[n] \mathbin{\oplus} B[n]) \mathbin{\oplus} C[n+1]$
+                \State $C[n] = (A[n] \land (B[n] \lor C[n])) \lor (B[n] \land C[n])$
+                \State $n--$
+            \EndWhile
+            \Return $C$
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
+
+\subsection{Inicialización}
+El anterior pseudocódigo asume que se tienen dos arreglos de bits $A$ y $B$ de tamaño $n$. Se inicializa con ceros un arreglo para almacenar el resultado de la suma $C$ de tamaño $(n+1)$. Así se garantiza que se reserva memoria suficiente para almacenar el resultado final.
+
+\subsection{Mantenimiento}
+En cada iteración del ciclo \textit{While} del algoritmo estamos utilizando el subarreglo $C[n, n+1]$ y $A[n], B[n]$ los cuales existen para cada valor de $n$ puesto que este valor no puede tomar valores menores a $1$, posición inicial de todos los arreglos.
+ 
+\subsection{Terminación}
+Ya que se ha impuesto un decremento al parámetro $n$ y una condición que haga que no se ejecuten más operaciones sobre elementos de los arreglos iniciales cuando este parámetro tenga un valor menor a $1$, es decir que se van a realizar n veces las iteraciones en el ciclo \textit{While} y al ser $n = 0$ se culminará la ejecución.

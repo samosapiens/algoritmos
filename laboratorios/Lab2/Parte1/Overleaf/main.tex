@@ -1,0 +1,78 @@
+% Importar librerias
+\documentclass{IEEEtran}
+\usepackage[utf8]{inputenc}%modifica las ñ y las tíldes para no colocar el cod ascii.
+\usepackage[total={18cm,21cm},top=2cm, left=2cm, bottom=3cm]{geometry}
+\usepackage[dvips]{graphicx}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage[spanish, english]{babel}
+\usepackage[x11names,table]{xcolor}
+\usepackage{amsmath,amssymb,amsfonts,latexsym,cancel}%Funciones especiales para matemáticas
+\usepackage{float} % Fijar posicion
+\usepackage[hidelinks]{hyperref}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+% Precompilar PDF
+\lstset{numbers=left, numberstyle=\scriptsize, numbersep=5pt, language=python, frame=single, fontadjust, basicstyle=\scriptsize, frameround=tttt, stepnumber=1, keywordstyle=\color{cyan}, showtabs=false, tab=\rightarrowfill} \renewcommand*\thelstnumber{\oldstylenums{\the\value{lstnumber}}}
+\makeatletter
+\def\contentsname{Indice}
+\def\listfigurename{Lista de Figuras}
+\def\listtablename{Lista de Tablas}
+\def\refname{Referencias}
+\def\indexname{Indice de Términos}
+\def\figurename{Fig.}
+\@IEEEcompsocconfonly{\def\figurename{Figura} \def\tablename{Tabla}}
+\def\partname{Parte}
+\def\appendixname{Apéndice}
+\def\abstractname{Abstract}
+\def\IEEEkeywordsname{Palabras Claves}
+\def\IEEEproofname{Demostración}
+\makeatother
+\ifCLASSOPTIONcompsoc
+\else
+\fi
+\ifCLASSINFOpdf
+\else
+\fi
+\providecommand{\PSforPDF}[1]{#1}
+
+% Metodos
+\newcommand\MYhyperrefoptions{bookmarks=true,bookmarksnumbered=true,
+pdfpagemode={UseOutlines},plainpages=false,pdfpagelabels=true,
+colorlinks=true,linkcolor={black},citecolor={black},pagecolor={black},
+urlcolor={black},
+pdftitle={ALGO_Lab1},
+pdfsubject={Typesetting},
+pdfauthor={Santiago},
+pdfkeywords={incremental, insertionSort}}
+
+% Aquí comienza el documento
+\title{
+	Laboratorio 2
+}
+\author{
+    Santiago Álvarez Sepúlveda, ~\IEEEmembership{\url{saalvarezse@unal.edu.co}, Cód:~25481031}\\
+    Universidad Nacional de Colombia, Sede Bogotá
+}
+
+\markboth{
+	Algoritmos, Laboratorio II, 9~Septiembre~2018
+}{B \MakeLowercase{\textit{et al.}}: IEEE.cls para Journals}
+
+% Aquí comienza el contenido del documento
+\begin{document}
+\maketitle
+
+\IEEEpeerreviewmaketitle
+\IEEEtitleabstractindextext
+\IEEEpeerreviewmaketitle
+
+\input{src/problema1.tex}
+\input{src/problema2.tex}
+\input{src/problema3.tex}
+\input{src/problema4.tex}
+
+\end{document}
