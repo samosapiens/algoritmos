@@ -1,7 +1,6 @@
 // Dependencias
 var fs = require('fs');
 var http = require('http');
-var plotly = require('plotly')("samosapiens", "J1v8KHIXFg91x9Pp0Eok")
 
 // Create server
 var server = http.createServer(function(request, response) { 

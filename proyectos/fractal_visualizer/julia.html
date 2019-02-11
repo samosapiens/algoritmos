@@ -1,153 +1,591 @@
 <!DOCTYPE html>
+<html>
     <head>
-        <title>Julia Set Visualizer</title>
+        <!-- Main Title -->
+        <title>Fractals Visualizer</title>
+        <link rel="icon" href="http://warp.povusers.org/Mandelbrot/Pic1.jpg" type="image/x-icon">
         <!-- Plotly.js -->
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <!-- math.js -->
+        <!-- Math.js -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js"></script>
         <!-- Numeric.js -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
-    </head>
-    <body>
-        <h1> Julia set for Z^3 Santiago A. </h1>
-        <!-- Plotly chart will be drawn inside this DIV -->
-        <div id="myDiv0"></div>
+        <!-- Style -->
+        <style type="text/css">
+            body {
+              background-color: black;
+              padding: 0px;
+              margin: 0px;
+              font-size: 10pt;
+              text-shadow: 0px 1px 0px rgb(40, 40, 40);
+            }
+      
+            a { color: #ccc; text-decoration: none; }
+            a:hover { color: #FF3B03; }
+      
+            #bottom { color: #666; }
+            #bottom a { color: #666; }
+            #bottom a:hover { color: #FF3B03; }
+      
+            #canvasMandelbrot {
+              background-color: black;
+              position: absolute;
+              left: 0px;
+              top: 0px;
+              z-index: 0;
+              padding: 0px;
+              margin: 0px;
+            }
+      
+            #canvasControls {
+              background-color: transparent;
+              position: absolute;
+              left: 0px;
+              top: 0px;
+              z-index: 5;
+              padding: 0px;
+              margin: 0px;
+              width:100%;
+              height:100%;
+            }
+      
+            #description {
+              z-index: 10;
+              position: absolute;
+              background-color: rgba(30, 30, 30, 0.6);
+              font-family: sans-serif;
+              padding: 20px;
+              margin: 20px;
+              border: 2px solid rgba(20, 20, 20, 0.6);
+              color: #FF3B03;
+              text-shadow: 0px 1px 0px rgb(40, 40, 40);
+              width: 750px;
+      
+              /* Make text non-selecatble */
+              user-select: none;
+              -moz-user-select: none;
+              -khtml-user-select: none;
+              -webkit-user-select: none;
+              -o-user-select: none;
+            }
+      
+            #infoBox:hover {
+              background-color: rgba(30, 30, 30, 0.3);
+              color: #444;
+              border: #222 1px solid;
+            }
+      
+            #infoBox {
+              text-align:right;
+              z-index: 10;
+              position: absolute;
+              right: 5px;
+              bottom: 5px;
+              padding: 5px;
+      
+              background: transparent;
+              color: rgba(51,51,51,0.1);
+              text-shadow: none;
+      
+              font-family: sans-serif;
+              font-size:8pt;
+            }
+      
+            #description table {
+              color: #ccc;
+            }
+      
+            #description input {
+              color: #ccc;
+              outline: none;
+              background-color: rgba(48,48,48,0.3);
+              border-width: 1px;
+              border-color: #444;
+            }
+      
+            #description select {
+              border: #444 1px solid;
+              color: #ccc;
+              outline: none;
+              background-color: #333;
+              -webkit-appearance: none;
+              font-size: 10pt;
+            }
+      
+            #autoIterations {
+              border: #444 1px solid;
+              color: #ccc;
+              outline: none;
+              background-color: #333;
+              font-size: 10pt;
+            }
+      
+            .headerText {
+              color: #666;
+            }
+      
+            #description .textInput {
+              text-align: right;
+              background-color: transparent;
+              border: #444 1px solid;
+              font-size: 10pt;
+            }
+      
+            hr {
+              border-color: #222;
+            }
+        </style>
+        
+        <!-- Definición de métodos y funciones principales -->
         <script>
-            // Plot parameters
-            var scale = 1.0;
-            var orig = [0.0, 0.0];
-            var shape = [1000, 1000];
 
-            // Construct domain
-            var x = numeric.linspace(orig[0], scale*shape[0] + orig[0], shape[0]);
-            var y = numeric.linspace(orig[1], scale*shape[1] + orig[1], shape[1]);
+            var i, j, a, b, x, y, z, z_i, z_values, scale, orig, shape, color, d1, d2, r1, r2, 
+                hm, axisXTemplate, axisYTemplate, layout, data;
 
-            // Squared norm
+            // Squared norm: |c|^2 = c x c*
             function normsqr(z) {
-                return (z.re*z.re)+(z.im+z.im);
+                return math.multiply(z, math.conj(z));
+            }
+
+            //----------------------------------
+            // Conjunto de Mandelbrot: Z^2 + C
+            //----------------------------------
+
+            // Mandelbrot set iteration
+            function Mandelbrot(c) {
+                var i, D, n=85, thresh=10.0, z=math.complex(0.0, 0.0);
+                // Z_i+1 = Z_i^2 + C0
+                for(i=0; i<n; i++) {
+                    // Iterate number
+                    z = math.add(math.multiply(z, z), c);
+                    // Euclidean norm
+                    D = math.sqrt(normsqr(z));
+                    if(D > thresh) break;
+                    //console.log('z: ' + z + ', D: ' + D + ', c0: ' + c0);
+                }
+                // Belongs or not to Mandelbrot set
+                if(i == n) return false;
+                else return true;
+            };
+
+            //----------------------------------
+            // Conjunto de Julia: Z^3 - 1
+            //----------------------------------
+
+            // f_J3(z) = z**3 - 1
+            function f_J3(z) {
+                return math.add(math.multiply(z, math.multiply(z, z)), math.complex(-1,0));
+            };
+
+            // df_J3(x) = 3*z**2
+            function df_J3(z) {
+                return math.multiply(math.complex(3,0), math.multiply(z, z));
             }
     
-            // f(z) = z**3 - 1
-            function f(z) {
-                var w; 
-                var k = math.complex(-1,0);
-                w = math.multiply(z, z);
-                z = math.multiply(w, z);
-                z = math.add(z, k);
-		        return z;
-            };
-
-            // df(x) = 3*z**2
-            function fd(z) {
-                var k = math.complex(3,0);
-                z = math.multiply(z, z);
-                z = math.multiply(z, k);
-                return z;
-            }
-	
             // Newton Rhapson Method
-            function Newton(z) {
-                var w;
+            function Newton_J3(z) {
                 var i = 0;
-                var k = math.complex(-1,0);
-                for(i=0 ; i < 20; i++) {
-                    w = f(z);
-                    w = math.divide(w, fd(z));
-                    w = math.multiply(w, k);
-                    z = math.add(z, w);
-                }
+                // z+1 = z - f(z)/df(z)
+                for(i=0 ; i<20; i++) z = math.add(z, math.multiply(math.complex(-1,0), math.divide(f_J3(z), df_J3(z))));
                 return z;
             };
 
-            var i, j;
-            var z_values = [];
-            var z = math.complex(0,0);
-            // Error de convergencia a las raices
-            var d1 = 0.0;
-            var d2 = 0.0;
-            var d3 = 0.0;
-            // Raices de la ecuación
-            var r1 = math.complex(-1.0,0.0);
-            var r2 = math.complex(0.5,0.5*math.sqrt(3.0));
-            var r3 = math.complex(0.5,-0.5*math.sqrt(3.0));
+            //----------------------------------
+            // Conjunto de Julia: Z^4 - 1
+            //----------------------------------
 
-            // Fractal
-            for(i=0; i<shape[0]; i++) {
-                var z_i = [];
-                for(j=0; j<shape[1]; j++) {
-                    // Get position of pixel in domain
-                    var a = i/(shape[0]*scale) + orig[0];
-                    var b = j/(shape[1]*scale) + orig[1];
-                    
-                    // Solve equation near this point
-                    z = math.complex(a, b);
-                    z = Newton(z);
-                    
-                    // Distance of z to roots
-                    d1 = math.sqrt(normsqr(math.add(r1, z)));
-                    d2 = math.sqrt(normsqr(math.add(r2, z)));
-                    d3 = math.sqrt(normsqr(math.add(r3, z)));
-
-                    // Set color of pixel
-                    var color = 0;
-                    if(d1 <= .25) {
-                        color = 1;
-                    }                
-                    if(d2 <= .25) {
-                        color = 2;
-                    }
-                    if(d3 <= .25) {
-                        color = 3;
-                    }
-                    z_i.push(color);
-                    //console.log('i: ' + i + ', j: ' + j + ', a: ' + a + ', b: ' + b);
-                }
-                z_values.push(z_i);
-            }        
-
-            // Construct Layout to visualize
-            var hm = {
-                x: x,
-                y: y,
-                z: z_values,
-                type: 'heatmap',
-                colorscale: 'Viridis'
+            // f_J4(z) = z**4 - 1
+            function f_J4(z) {
+                return math.add(math.multiply(z, math.multiply(z, math.multiply(z, z))), math.complex(-1,0));
             };
 
-            var axisXTemplate = {
-                range: [orig[0], scale*shape[0] + orig[0]],
-                autorange: false,
-                showgrid: false,
-                zeroline: false,
-                showticklabels: false,
-                ticks: ''
+            // df_J4(x) = 4*z**3
+            function df_J4(z) {
+                return math.multiply(math.complex(4,0), math.multiply(z, math.multiply(z, z)));
+            }
+    
+            // Newton Rhapson Method
+            function Newton_J4(z) {
+                var i = 0;
+                // z+1 = z - f(z)/df(z)
+                for(i=0 ; i<20; i++) z = math.add(z, math.multiply(math.complex(-1,0), math.divide(f_J4(z), df_J4(z))));
+                return z;
             };
 
-            var axisYTemplate = {
-                range: [orig[1], scale*shape[1] + orig[1]],
-                autorange: false,
-                showgrid: false,
-                zeroline: false,
-                showticklabels: false,
-                ticks: ''
-            };
-
-            var layout = {
-                title: 'Colorfull Algorithm Convergence Visualization',
-                margin: { t: 100, r: 100, b: 100, l: 100},
-                xaxis: axisXTemplate,
-                yaxis: axisYTemplate,
-                showlegend: false,
-                width: 600,
-                height: 600,
-                autosize: false
-            };
-
-            var data = [hm];
-
-            // Plot result
-            Plotly.newPlot('myDiv0', data, layout, {showSendToCloud: true});
 
         </script>
+    </head>
+    <body>
+        <div id="description">
+            <hr />
+                <h1> Fractals Visualizer: SANTIAGO ALVAREZ SEPULVEDA. </h1>
+                <p class="headerText">In HTML5 Canvas and JavaScript</p>
+            <hr/>
+            <div id="d1">
+                <div id="d1_gui">
+                    <h2>Mandelbrot Set: Z^2 + C0</h2>
+                    <!-- Label y Edit parámetro X0 -->
+                    <label for="X0">X0</label>
+                    <input type="text" name="origin" id="X0" value="-1.5"><br>
+                    <!-- Label y Edit parámetro Y0 -->
+                    <label for="Y0">Y0</label>
+                    <input type="text" name="origin" id="Y0" value="-1"><br>
+                    <label for="resX">resX</label>
+                    <input type="text" name="resolution" id="resX" value="100"><br>
+                    <label for="resY">resY</label>
+                    <input type="text" name="resolution" id="resY" value="100"><br>
+                    <!-- Label y Edit parámetro de Escala -->
+                    <label for="scale">Scale</label>
+                    <input type="text" name="scale" id="scale" value="0.5"><br>
+                    <button type="button" onclick="plotMandelbrot();">REPLOT</button>
+                    <script>
+
+                        function plotMandelbrot() {
+                            var scale, orig = [], shape = [];
+                            scale = parseFloat(document.getElementById("scale").value);
+                            orig[0] = parseFloat(document.getElementById("X0").value);
+                            orig[1] = parseFloat(document.getElementById("Y0").value);
+                            shape[0] = parseInt(document.getElementById("resX").value);
+                            shape[1] = parseInt(document.getElementById("resY").value);
+                            console.log("scale: " + scale + ", orig: " + orig + ", shape: " + shape)
+
+                            // Construct domain
+                            z_values = [];
+                            x = numeric.linspace(orig[0], scale*shape[0] + orig[0], shape[0]);
+                            y = numeric.linspace(orig[1], scale*shape[1] + orig[1], shape[1]);
+
+                            // Fractal
+                            for(i=0; i<shape[0]; i++) {
+                                z_i = [];
+                                for(j=0; j<shape[1]; j++) {
+                                    // Get position of pixel in domain
+                                    a = i/(shape[0]*scale) + orig[0];
+                                    b = j/(shape[1]*scale) + orig[1];
+                                    // Solve equation near this point
+                                    z = math.complex(a, b);
+                                    // Set color of pixel
+                                    if(Mandelbrot(z)) color = 1;
+                                    else color = 0;
+                                    z_i.push(color);
+                                    //console.log('i: ' + i + ', j: ' + j + ', a: ' + a + ', b: ' + b);
+                                }
+                                z_values.push(z_i);
+                            }
+                            // Construct Layout to visualize
+                            hm = { x: x, y: y, z: z_values, type: 'heatmap', colorscale: 'Viridis' };
+
+                            axisXTemplate = { range: [orig[0], scale*shape[0] + orig[0]], autorange: false,
+                                showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                            axisYTemplate = { range: [orig[1], scale*shape[1] + orig[1]], autorange: false,
+                                showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                            layout = { title: 'Root Convergence', margin: { t: 50, r: 50, b: 50, l: 50},
+                                xaxis: axisXTemplate, yaxis: axisYTemplate, showlegend: false, autosize: false,
+                                width: 750, height: 750 };
+
+                            data = [hm];
+
+                            // Plot result
+                            Plotly.newPlot('d1_fig', data, layout, {showSendToCloud: true});
+                        }
+
+                    </script>
+                </div>
+                <div id="d1_fig"></div>
+            </div>
+            <div id="d2">
+                <div id="d2_gui">
+                    <h2>Julia Set: Z^3 - 1</h2>
+                    <!-- Label y Edit parámetro X0 -->
+                    <label for="X0">X0</label>
+                    <input type="text" name="origin" id="X0" value="-1.5"><br>
+                    <!-- Label y Edit parámetro Y0 -->
+                    <label for="Y0">Y0</label>
+                    <input type="text" name="origin" id="Y0" value="-1"><br>
+                    <label for="resX">resX</label>
+                    <input type="text" name="resolution" id="resX" value="100"><br>
+                    <label for="resY">resY</label>
+                    <input type="text" name="resolution" id="resY" value="100"><br>
+                    <!-- Label y Edit parámetro de Escala -->
+                    <label for="scale">Scale</label>
+                    <input type="text" name="scale" id="scale" value="0.5"><br>
+                    <button type="button" onclick="plotJ3();">REPLOT</button>
+                    <script>
+
+                        function plotJ3() {
+                            var scale, orig = [], shape = [];
+                            scale = parseFloat(document.getElementById("scale").value);
+                            orig[0] = parseFloat(document.getElementById("X0").value);
+                            orig[1] = parseFloat(document.getElementById("Y0").value);
+                            shape[0] = parseInt(document.getElementById("resX").value);
+                            shape[1] = parseInt(document.getElementById("resY").value);
+                            console.log("scale: " + scale + ", orig: " + orig + ", shape: " + shape)
+
+                            // Construct domain
+                            z_values = [];
+                            x = numeric.linspace(orig[0], scale*shape[0] + orig[0], shape[0]);
+                            y = numeric.linspace(orig[1], scale*shape[1] + orig[1], shape[1]);
+
+                            // Fractal
+                            for(i=0; i<shape[0]; i++) {
+                                z_i = [];
+                                for(j=0; j<shape[1]; j++) {
+                                    // Get position of pixel in domain
+                                    a = i/(shape[0]*scale) + orig[0];
+                                    b = j/(shape[1]*scale) + orig[1];
+                                    // Solve equation near this point
+                                    z = math.complex(a, b);
+                                    // Set color of pixel
+                                    if(Mandelbrot(z)) color = 1;
+                                    else color = 0;
+                                    z_i.push(color);
+                                    //console.log('i: ' + i + ', j: ' + j + ', a: ' + a + ', b: ' + b);
+                                }
+                                z_values.push(z_i);
+                            }
+                            // Construct Layout to visualize
+                            hm = { x: x, y: y, z: z_values, type: 'heatmap', colorscale: 'Viridis' };
+
+                            axisXTemplate = { range: [orig[0], scale*shape[0] + orig[0]], autorange: false,
+                                showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                            axisYTemplate = { range: [orig[1], scale*shape[1] + orig[1]], autorange: false,
+                                showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                            layout = { title: 'Root Convergence', margin: { t: 50, r: 50, b: 50, l: 50},
+                                xaxis: axisXTemplate, yaxis: axisYTemplate, showlegend: false, autosize: false,
+                                width: 750, height: 750 };
+
+                            data = [hm];
+
+                            // Plot result
+                            Plotly.newPlot('d2_fig', data, layout, {showSendToCloud: true});
+                        }
+
+                    </script>
+                </div>
+                <div id="d2_fig"></div>
+            </div>
+            <div id="d3">
+                <div id="d3_gui">
+                    <h2>Julia Set: Z^4 - 1</h2>
+                    <label for="X0">X0</label>
+                    <input type="text" name="origin" id="X0" value="X0"><br>
+                    <label for="Y0">Y0</label>
+                    <input type="text" name="origin" id="Y0" value="Y0"><br>
+                    <label for="resX">resX</label>
+                    <input type="text" name="resolution" id="resX" value="resX"><br>
+                    <label for="resY">resY</label>
+                    <input type="text" name="resolution" id="resY" value="resY"><br>
+                    <label for="scale">scale</label>
+                    <input type="text" name="scale" id="scale" value="scale"><br>
+                    <button type="button">REPLOT</button>
+                </div>
+                <div id="d3_fig"></div>
+            </div>
+
+            <!-- Plotly chart will be drawn inside div d1  -->
+            <!--script>
+                
+                // Plot parameters
+                scale = 0.3;
+                orig = [-2.0, -2.0];
+                shape = [1000, 1000];
+
+                // Construct domain
+                z_values = [];
+                x = numeric.linspace(orig[0], scale*shape[0] + orig[0], shape[0]);
+                y = numeric.linspace(orig[1], scale*shape[1] + orig[1], shape[1]);
+
+                // Fractal
+                for(i=0; i<shape[0]; i++) {
+                    z_i = [];
+                    for(j=0; j<shape[1]; j++) {
+                        // Get position of pixel in domain
+                        a = i/(shape[0]*scale) + orig[0];
+                        b = j/(shape[1]*scale) + orig[1];
+                        // Solve equation near this point
+                        z = math.complex(a, b);
+                        // Set color of pixel
+                        if(Mandelbrot(z)) color = 1;
+                        else color = 0;
+                        z_i.push(color);
+                        //console.log('i: ' + i + ', j: ' + j + ', a: ' + a + ', b: ' + b);
+                    }
+                    z_values.push(z_i);
+                }
+
+                // Construct Layout to visualize
+                hm = { x: x, y: y, z: z_values, type: 'heatmap', colorscale: 'Viridis' };
+
+                axisXTemplate = { range: [orig[0], scale*shape[0] + orig[0]], autorange: false,
+                    showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                axisYTemplate = { range: [orig[1], scale*shape[1] + orig[1]], autorange: false,
+                    showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                layout = { title: 'Root Convergence', margin: { t: 50, r: 50, b: 50, l: 50},
+                    xaxis: axisXTemplate, yaxis: axisYTemplate, showlegend: false, autosize: false,
+                    width: 750, height: 750 };
+
+                data = [hm];
+
+                // Plot result
+                Plotly.newPlot('d1_fig', data, layout, {showSendToCloud: true});
+
+            </script-->
+
+            <!-- Plotly chart will be drawn inside div d2 -->
+            <!--script>
+
+                // Plot parameters
+                scale = 0.01;
+                orig = [-12.0, 0.0];
+                shape = [1000, 1000];
+
+                // Construct domain
+                z_values = [];
+                z = math.complex(0, 0);
+                x = numeric.linspace(orig[0], scale*shape[0] + orig[0], shape[0]);
+                y = numeric.linspace(orig[1], scale*shape[1] + orig[1], shape[1]);
+
+                // Error de convergencia a las raices
+                d1 = 0.0;
+                d2 = 0.0;
+                d3 = 0.0;
+
+                // Raices de la ecuación
+                r1 = math.complex(-1.0, 0.0);
+                r2 = math.complex(0.5, 0.5*math.sqrt(3.0));
+                r3 = math.complex(0.5, 0.5*math.sqrt(3.0));
+
+                // Fractal
+                for(i=0; i<shape[0]; i++) {
+                    z_i = [];
+                    for(j=0; j<shape[1]; j++) {
+                        // Get position of pixel in domain
+                        a = i/(shape[0]*scale) + orig[0];
+                        b = j/(shape[1]*scale) + orig[1];
+                        
+                        // Solve equation near this point
+                        z = math.complex(a, b);
+                        z = Newton_J3(z);
+                        
+                        // Distance of z to roots
+                        d1 = math.sqrt(normsqr(math.add(r1, z)));
+                        d2 = math.sqrt(normsqr(math.add(r2, z)));
+                        d3 = math.sqrt(normsqr(math.add(r3, z)));
+
+                        // Set color of pixel
+                        color = 0;
+                        if(d1 <= .25) color = 1;
+                        if(d2 <= .25) color = 2;
+                        if(d3 <= .25) color = 3;
+                        z_i.push(color);
+                        //console.log('i: ' + i + ', j: ' + j + ', a: ' + a + ', b: ' + b);
+                    }
+                    z_values.push(z_i);
+                }
+
+                // Construct Layout to visualize
+                hm = { x: x, y: y, z: z_values, type: 'heatmap', colorscale: 'Viridis' };
+
+                axisXTemplate = { range: [orig[0], scale*shape[0] + orig[0]], autorange: false,
+                    showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                axisYTemplate = { range: [orig[1], scale*shape[1] + orig[1]], autorange: false,
+                    showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                layout = { title: 'Root Convergence', margin: { t: 50, r: 50, b: 50, l: 50},
+                    xaxis: axisXTemplate, yaxis: axisYTemplate, showlegend: false, autosize: false,
+                    width: 750, height: 750 };
+
+                data = [hm];
+
+                // Plot result
+                Plotly.newPlot('d2_fig', data, layout, {showSendToCloud: true});
+
+            </script-->
+
+            <!-- Plotly chart will be drawn inside div d3  -->
+            <!--script>
+                
+                // Plot parameters
+                scale = 0.1;
+                orig = [-11.0, 0.0];
+                shape = [1000, 1000];
+
+                // Construct domain
+                z_values = [];
+                z = math.complex(0, 0);
+                x = numeric.linspace(orig[0], scale*shape[0] + orig[0], shape[0]);
+                y = numeric.linspace(orig[1], scale*shape[1] + orig[1], shape[1]);
+
+                // Error de convergencia a las raices
+                d1 = 0.0;
+                d2 = 0.0;
+                d3 = 0.0;
+                d4 = 0.0;
+
+                // Raices de la ecuación
+                r1 = math.complex(1.0,0.0);
+                r2 = math.complex(0.0,1.0);
+                r3 = math.complex(-1.0,0.0);
+                r4 = math.complex(0.0,-1.0);
+
+                // Fractal
+                for(i=0; i<shape[0]; i++) {
+                    z_i = [];
+                    for(j=0; j<shape[1]; j++) {
+                        // Get position of pixel in domain
+                        a = i/(shape[0]*scale) + orig[0];
+                        b = j/(shape[1]*scale) + orig[1];
+                        
+                        // Solve equation near this point
+                        z = math.complex(a, b);
+                        z = Newton_J4(z);
+                        
+                        // Distance of z to roots
+                        d1 = math.sqrt(normsqr(math.add(r1, z)));
+                        d2 = math.sqrt(normsqr(math.add(r2, z)));
+                        d3 = math.sqrt(normsqr(math.add(r3, z)));
+                        d4 = math.sqrt(normsqr(math.add(r4, z)));
+
+                        // Set color of pixel
+                        color = 0;
+                        if(d1 <= .25) color = 1;
+                        if(d2 <= .25) color = 2;
+                        if(d3 <= .25) color = 3;
+                        if(d4 <= .25) color = 4;
+                        z_i.push(color);
+                        //console.log('i: ' + i + ', j: ' + j + ', a: ' + a + ', b: ' + b);
+                    }
+                    z_values.push(z_i);
+                }
+
+                // Construct Layout to visualize
+                hm = { x: x, y: y, z: z_values, type: 'heatmap', colorscale: 'Viridis' };
+
+                axisXTemplate = { range: [orig[0], scale*shape[0] + orig[0]], autorange: false,
+                    showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                axisYTemplate = { range: [orig[1], scale*shape[1] + orig[1]], autorange: false,
+                    showgrid: false, zeroline: false, showticklabels: true, ticks: '' };
+
+                layout = { title: 'Root Convergence', margin: { t: 50, r: 50, b: 50, l: 50},
+                    xaxis: axisXTemplate, yaxis: axisYTemplate, showlegend: false, autosize: false,
+                    width: 750, height: 750 };
+
+                data = [hm];
+
+                // Plot result
+                Plotly.newPlot('d3_fig', data, layout, {showSendToCloud: true});
+            
+            </script-->
+            
+        </div>
+
     </body>
+
 </html>
